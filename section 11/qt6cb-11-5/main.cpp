@@ -18,11 +18,10 @@
 #include "station.h"
 
 using namespace std;
-
+bool ON=0,OFF=0,TEST=0;
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-
     Radio boombox;
     Station* channels[3];
 
@@ -46,35 +45,39 @@ int main(int argc, char *argv[])
         QTextStream qtin(stdin);
         QString line = qtin.readLine().trimmed().toUpper();
 
-        if(line == "ON")
+        if((line == "ON") && (ON==false))
         {
             qInfo() << "Turning the radio on";
             for(int i = 0; i< 3; i++)
             {
-                Station* channel = channels[i];
-                boombox.connect(channel,&Station::send,&boombox, &Radio::listen);
+                //Station* channel = channels[i];
+                ON=true;OFF=false;TEST=false;
+
+                boombox.connect(channels[i],&Station::send,&boombox, &Radio::listen);
             }
             qInfo() << "Radio is on";
         }
 
-        if(line == "OFF")
+        if((line == "OFF")&&(OFF==false))
         {
             qInfo() << "Turning the radio off";
             for(int i = 0; i< 3; i++)
             {
-                Station* channel = channels[i];
-                boombox.disconnect(channel,&Station::send,&boombox, &Radio::listen);
+                //*Station* channel = channels[i];
+                OFF=true;ON=false;TEST=false;
+                boombox.disconnect(channels[i],&Station::send,&boombox, &Radio::listen);
             }
             qInfo() << "Radio is off";
         }
 
-        if(line == "TEST")
+        if((line == "TEST")&&(TEST==false))
         {
             qInfo() << "Testing";
             for(int i = 0; i< 3; i++)
             {
-                Station* channel = channels[i];
-                channel->broadcast("Broadcasting live!");
+               /* Station* channel = channels[i];*/
+                TEST=true;OFF=false;ON=false;
+                channels[i]->broadcast("Broadcasting live!");
             }
             qInfo() << "Test complete";
         }
@@ -82,6 +85,7 @@ int main(int argc, char *argv[])
         if(line == "QUIT")
         {
             qInfo() << "Quitting";
+            TEST=false;OFF=false;ON=false;
             emit boombox.quit();
             break;
         }
